@@ -1,0 +1,6 @@
+.git
+.github
+settings.json
+.env
+.env.*
+*.log

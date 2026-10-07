@@ -1,0 +1,48 @@
+diff --git a/go.mod b/go.mod
+index a4834bb..75a90b7 100644
+--- a/go.mod
++++ b/go.mod
+@@ -1,13 +1,13 @@
+ module yomiage
+ 
+-go 1.22
++go 1.24
+ 
+-require (
+-	github.com/bwmarrin/discordgo v0.29.0
+-	github.com/jonas747/dca/v2 v2.0.0
+-)
++toolchain go1.24.0
++
++require github.com/jonas747/dca/v2 v2.0.0
+ 
+ require (
++	github.com/aleph-garden/discordgo v0.29.1-dave.26
+ 	github.com/gorilla/websocket v1.4.2 // indirect
+ 	github.com/jonas747/ogg v0.0.0-20161220051205-b4f6f4cf3757 // indirect
+ 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect
+diff --git a/go.sum b/go.sum
+index abb73b6..6d491d9 100644
+--- a/go.sum
++++ b/go.sum
+@@ -1,5 +1,5 @@
+-github.com/bwmarrin/discordgo v0.29.0 h1:FmWeXFaKUwrcL3Cx65c20bTRW+vOb6k8AnaP+EgjDno=
+-github.com/bwmarrin/discordgo v0.29.0/go.mod h1:NJZpH+1AfhIcyQsPeuBKsUtYrRnjkyu0kIVMCHkZtRY=
++github.com/aleph-garden/discordgo v0.29.1-dave.26 h1:lM9cs//zkYdjJ+se0RTETLRszub+lIvVCNLLvTVQKLs=
++github.com/aleph-garden/discordgo v0.29.1-dave.26/go.mod h1:27BvMvMA9X24IGTmV46q152IZLeRgdFquKJvFS9lRrw=
+ github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=
+ github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
+ github.com/jonas747/dca/v2 v2.0.0 h1:27SRgmKjJFA6jequrkkAmpx1c7AZ8OsMbTzdxGLUiHw=
+diff --git a/main.go b/main.go
+index 55b5464..6856544 100644
+--- a/main.go
++++ b/main.go
+@@ -23,7 +23,7 @@ import (
+ 	"time"
+ 	"unicode/utf8"
+ 
+-	"github.com/bwmarrin/discordgo"
++	"github.com/aleph-garden/discordgo"
+ 	"github.com/jonas747/dca/v2"
+ )
+ 

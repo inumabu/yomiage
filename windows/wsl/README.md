@@ -52,7 +52,7 @@ BotだけWSL、VOICEVOXをWindows側のPCへ置く場合は、VOICEVOXの到達�
 
 ## 🔨 Botのインストール補助
 
-GitHub Actionsで生成したamd64/arm64 Linux artifactをWSL内へ置いた後、次のようにインストールできます。
+GitHub Actionsで生成したamd64 Linux artifactをWSL内へ置いた後、次のようにインストールできます。
 
 ```bash
 sudo bash ./windows/wsl/install-bot.sh ./yomiage-keiryou-amd64

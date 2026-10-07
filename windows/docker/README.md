@@ -18,12 +18,37 @@ VOICEVOX の `50021/tcp` はホストへ公開せず、Docker 内ネットワー
 PowerShell でこのディレクトリに移動し、`up.ps1` を実行します。PowerShell の実行ポリシーでブロックされる場合は `up.cmd` を使えます。
 
 ```powershell
-Copy-Item .env.example .env
-notepad .env
+.\setup-env.ps1
 .\up.ps1
 ```
 
-`DISCORD_TOKEN` を設定してから起動してください。
+🔐 `setup-env.ps1`ではDiscord Bot Tokenを非表示で入力できます。`.env`が存在しない状態で`.\up.ps1`を実行した場合も、自動的に対話設定が始まります。
+
+PowerShellが使えない場合:
+
+```cmd
+setup-env.cmd
+up.cmd
+```
+
+Linux/WSLでは次を使います。
+
+```bash
+./setup-env.sh
+docker compose -f compose.yml up -d --build
+```
+
+🔁 設定をやり直す場合は、既存`.env`を保護するため明示的に強制指定します。
+
+```powershell
+.\setup-env.ps1 -Force
+```
+
+```bash
+./setup-env.sh --force
+```
+
+💡 `.env`は秘密情報を含むため、Git・Issue・スクリーンショットへ貼り付けないでください。
 
 ## 📋 操作
 
@@ -34,6 +59,13 @@ notepad .env
 .\backup.ps1
 .\restore.ps1 .\backup\settings-YYYYMMDD-HHMMSS.zip
 ```
+
+## 📨 Discordメッセージの表示範囲
+
+- `/status`、`/queue`、`/help`などのスラッシュコマンド結果は、**実行した本人だけが見られる非公開Embed**です。
+- ボタン操作の結果も、**ボタンを押した本人だけが見られる非公開Embed**です。
+- 通常のメッセージコマンドや、読み上げ失敗などのBot通知は、チャンネル全体に見える**公開Embed**です。
+- 成功は`✅`、注意・失敗は`⚠️`/`❌`の色と絵文字で区別します。
 
 ## 💾 データ
 

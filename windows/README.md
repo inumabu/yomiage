@@ -13,10 +13,11 @@
 
 ```powershell
 cd windows\docker
-Copy-Item .env.example .env
-notepad .env
+.\setup-env.ps1
 .\up.ps1
 ```
+
+🔐 Tokenは対話設定中に非表示入力できます。PowerShellが使えない場合は`setup-env.cmd`と`up.cmd`を使用してください。
 
 ## 🐧 WSL2 / Debian
 

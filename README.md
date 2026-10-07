@@ -1,4 +1,4 @@
-# 🗣️ Yomiage Keiryou v5.3
+# 🗣️ Yomiage Keiryou v5.3.2
 
 DiscordのメッセージをVOICEVOXで読み上げる`yomiage`を、低メモリ環境向けに調整した配布・運用セットです。
 TTS音声をディスクキャッシュへ保存し、合成の同時実行を直列化することで、VPS・Docker Desktop・WSL2・Raspberry Pi構成での安定運用を目指します。
@@ -13,17 +13,18 @@ TTS音声をディスクキャッシュへ保存し、合成の同時実行を�
 - `pc-schedule/`: systemd timerによるPC起動・停止スケジュール
 - `bot/systemd/`、`voicevox/systemd/`: Linuxサービス定義、バックアップ、キャッシュGC
 
-## 最短手順: Windows + Docker Desktop
+## 🚀 最短手順: Windows + Docker Desktop
 
 ```powershell
 cd windows/docker
-Copy-Item .env.example .env
-notepad .env
+.\setup-env.ps1
 .\up.ps1
 .\logs.ps1
 ```
 
-`.env`へ`DISCORD_TOKEN`を設定してください。停止は以下です。
+🔐 `setup-env.ps1`でTokenを非表示入力できます。`.\up.ps1`は`.env`が未作成またはToken未設定の場合、自動的に対話設定を開始します。
+
+停止は以下です。
 
 ```powershell
 .\down.ps1
@@ -33,7 +34,7 @@ PowerShellの実行ポリシーでブロックされる場合は、同じディ�
 
 ## Linuxビルド
 
-必要環境: Bash、Git、Go 1.22以上、`patch`。
+必要環境: Bash、Git、Go 1.24以上、CMake、C++ツールチェーン、`patch`。
 
 ```bash
 TARGET_ARCH=amd64 bash ./build/build.sh
@@ -85,6 +86,7 @@ make archive-amd64
 - [Windows + Docker](windows/docker/README.md)
 - [WSL](windows/wsl/README.md)
 - [VOICEVOX](voicevox/README.md)
+- [🔐 対話型env設定](docs/env-setup.md)
 - [PCスケジュール](pc-schedule/README.md)
 
 ## CI
@@ -96,6 +98,13 @@ GitHub Actionsでは、DAVE対応Linux amd64のテスト・ビルド、WSL amd64
 - Discordトークンや`.env`、バックアップZIPはGitへコミットしないでください。
 - VOICEVOX EngineとBotは同じホストで常駐させる場合、メモリ上限を確認してください。
 - `patches/0001-keiryou-cache.patch`は指定した上流コミット専用です。上流コミットを変更する場合は、差分の再生成とテストが必要です。
+
+## 📨 Discord表示の使い分け
+
+- `/status`、`/queue`、`/help`、設定系コマンドの結果は、実行者だけに見える`Ephemeral Embed`です。
+- ボタン操作の結果も、押した本人だけに表示されます。
+- 通常メッセージコマンドとBotの障害通知は、チャンネル全体に表示される公開Embedです。
+- `✅`成功、`⚠️`注意、`❌`失敗を色と絵文字で統一しています。
 
 ## 🔐 DAVE対応
 

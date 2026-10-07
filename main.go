@@ -524,9 +524,10 @@ func (b *bot) replyInteraction(interaction *discordgo.InteractionCreate, content
 		Data: &discordgo.InteractionResponseData{
 			Embeds:     []*discordgo.MessageEmbed{newEmbed("📣 読み上げBOT", content, ok, b.embedFieldsForGuild(interaction.GuildID))},
 			Components: []discordgo.MessageComponent{newActionRow()},
+			Flags:      discordgo.MessageFlagsEphemeral,
 		},
 	}); err != nil {
-		log.Printf("⚠️ Interaction への応答に失敗しました: %v", err)
+		log.Printf("⚠️ Interaction への非公開Embed応答に失敗しました: %v", err)
 	}
 }
 

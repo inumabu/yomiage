@@ -1,5 +1,12 @@
 # 📝 Changelog
 
+## v5.3.2
+
+- 🔐 Discord VoiceのDAVE/E2EE必須化に対応
+- 🚀 DAVE対応`aleph-garden/discordgo v0.29.1-dave.26`へ移行
+- 🐳 Dockerビルドへlibdave・OpenSSL 3・CGOビルドを追加
+- ⚠️ DAVE対応ビルドは現時点でLinux amd64を正式対象化
+
 ## v5.3.1
 
 - 🐳 Docker Composeの`yomiage-volume-init`を修正

@@ -1,6 +1,6 @@
 # 📝 Changelog
 
-## 🚧 Unreleased
+## v5.3.3
 
 - 🔐 Windows / WSL向けの対話型`.env`設定を追加
 - 🙈 Discordのスラッシュコマンドとボタン応答を実行者限定のEphemeral Embedへ変更

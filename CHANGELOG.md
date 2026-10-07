@@ -1,5 +1,12 @@
 # 📝 Changelog
 
+## 🚧 Unreleased
+
+- 🔐 Windows / WSL向けの対話型`.env`設定を追加
+- 🙈 Discordのスラッシュコマンドとボタン応答を実行者限定のEphemeral Embedへ変更
+- 📨 通常メッセージとBot障害通知は公開Embedとして使い分け
+- 📚 初回構築・秘密情報管理・表示範囲のドキュメントを拡充
+
 ## v5.3.2
 
 - 🔐 Discord VoiceのDAVE/E2EE必須化に対応

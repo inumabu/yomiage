@@ -5,6 +5,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+User=voicevox
+Group=voicevox
 EnvironmentFile=/etc/voicevox-engine.env
 ExecStart=/usr/local/libexec/voicevox-keiryou-wrapper
 Restart=always

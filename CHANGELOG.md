@@ -1,5 +1,12 @@
 # 📝 Changelog
 
+## v5.3.1
+
+- 🐳 Docker Composeの`yomiage-volume-init`を修正
+  - Bot用ENTRYPOINTを明示的に上書き
+  - `/bin/sh -lc`でVolume初期化処理を実行
+  - 初回起動時の`exit 1`を解消
+
 ## v5.3.0
 
 - 🛠️ CIを実行ビットに依存しない方式へ変更

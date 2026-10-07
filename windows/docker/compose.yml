@@ -6,9 +6,10 @@ services:
       context: ../..
       dockerfile: windows/docker/Dockerfile
     user: "0:0"
-    command:
+    entrypoint:
       - /bin/sh
       - -lc
+    command:
       - >-
         uid=$$(id -u yomiage-keiryou); gid=$$(id -g yomiage-keiryou);
         install -d -m 0750 /var/lib/yomiage-keiryou /var/lib/yomiage-keiryou/cache/tts /var/lib/yomiage-keiryou/tmp;

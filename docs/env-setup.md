@@ -1,6 +1,6 @@
 # 🔐 対話型 `.env` 設定ガイド
 
-Yomiage Keiryou v5.3.3のDocker構成は、初回起動前にDiscord Bot Tokenなどを対話形式で設定できます。Tokenは入力中に画面へ表示されません。
+Yomiage Keiryou v5.3.4のDocker構成は、初回起動前にDiscord Bot Tokenなどを対話形式で設定できます。Tokenは入力中に画面へ表示されません。
 
 ## Windows PowerShell
 

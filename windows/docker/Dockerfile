@@ -32,13 +32,14 @@ RUN cd /work/yomiage \
     && git apply /work/yomiage-keiryou.patch \
     && git apply /work/yomiage-dave.patch
 
-RUN set -eux; \
+RUN cd /work/yomiage \
+    && set -eux; \
     LIBDAVE_BUILD=/work/discordgo/dave/libdave/cpp/build; \
-    VCPKG_LIBDIR="$$(find "$$LIBDAVE_BUILD/vcpkg_installed" -maxdepth 2 -type d -name lib | head -1)"; \
-    VCPKG_LIBS="$$(find "$$VCPKG_LIBDIR" -maxdepth 1 -name '*.a' | sort | tr '\n' ' ')"; \
+    VCPKG_LIBDIR="$(find "$LIBDAVE_BUILD/vcpkg_installed" -maxdepth 2 -type d -name lib | head -1)"; \
+    VCPKG_LIBS="$(find "$VCPKG_LIBDIR" -maxdepth 1 -name '*.a' | sort | tr '\n' ' ')"; \
     export CGO_ENABLED=1; \
     export CGO_CFLAGS="-I/work/discordgo/dave/libdave/cpp/includes"; \
-    export CGO_LDFLAGS="-L$$VCPKG_LIBDIR $$LIBDAVE_BUILD/libdave.a -Wl,--start-group $$VCPKG_LIBS -Wl,--end-group -lstdc++ -lm -ldl -lpthread"; \
+    export CGO_LDFLAGS="-L$VCPKG_LIBDIR $LIBDAVE_BUILD/libdave.a -Wl,--start-group $VCPKG_LIBS -Wl,--end-group -lstdc++ -lm -ldl -lpthread"; \
     go test -vet=off ./...; \
     go build -trimpath -ldflags='-s -w' -o /out/yomiage-keiryou .
 

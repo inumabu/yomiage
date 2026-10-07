@@ -1,0 +1,11 @@
+# Secrets
+.env
+**/.env
+*.secret
+
+# Runtime data
+backup/
+backups/
+build/dist/
+windows/wsl/yomiage-keiryou-amd64
+windows/wsl/yomiage-keiryou-arm64

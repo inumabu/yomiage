@@ -1,96 +1,99 @@
-# 🔊 Discord 読み上げ BOT
+# 🗣️ Yomiage Keiryou v5.3
 
-discordgo と VOICEVOX Engine を使い、テキストチャンネルの投稿をボイスチャンネルで読み上げます。
+DiscordのメッセージをVOICEVOXで読み上げる`yomiage`を、低メモリ環境向けに調整した配布・運用セットです。
+TTS音声をディスクキャッシュへ保存し、合成の同時実行を直列化することで、VPS・Docker Desktop・WSL2・Raspberry Pi構成での安定運用を目指します。
 
-## 📋 必要なもの
+## 含まれるもの
 
-- Go 1.22 以降、または Docker
-- ffmpeg
-- 起動中の VOICEVOX Engine（標準URL: `http://localhost:50021`）
-- DiscordアプリのBotトークン
+- `build/`: 固定した上流コミットへキャッシュ機能を適用し、Linux amd64/arm64をビルド
+- `patches/`: 上流`inumabu/yomiage`への再現可能なパッチ
+- `windows/docker/`: Windows 10/11 + Docker Desktop + WSL2向け構成
+- `windows/wsl/`: WSLから実行するLinuxバイナリの例
+- `modes/`: 常駐、スケジュール、Pi、VPSの運用モード
+- `pc-schedule/`: systemd timerによるPC起動・停止スケジュール
+- `bot/systemd/`、`voicevox/systemd/`: Linuxサービス定義、バックアップ、キャッシュGC
 
-Discord Developer Portal で **Message Content Intent** を有効にしてください。Botにはメッセージ閲覧とボイスチャンネル接続・発話の権限が必要です。
-
-## 🚀 起動
-
-```sh
-cp .env.example .env
-export DISCORD_TOKEN="Botトークン"
-export DISCORD_GUILD_ID="123456789012345678" # 開発中は指定推奨
-go run .
-```
-
-PowerShell では次のように設定します。
+## 最短手順: Windows + Docker Desktop
 
 ```powershell
+cd windows/docker
 Copy-Item .env.example .env
-$env:DISCORD_TOKEN = "Botトークン"
-$env:DISCORD_GUILD_ID = "123456789012345678"
-go run .
+notepad .env
+.\up.ps1
+.\logs.ps1
 ```
 
-設定は `settings.json` にサーバー単位で保存されます。保存先は `YOMIAGE_SETTINGS_FILE` で変更できます。`VOICEVOX_URL`、`VOICEVOX_SPEAKER` も環境変数で変更できます。
+`.env`へ`DISCORD_TOKEN`を設定してください。停止は以下です。
 
-## 🧭 コマンド
+```powershell
+.\down.ps1
+```
 
-| 機能 | メッセージコマンド | スラッシュコマンド | 権限 |
-|---|---|---|---|
-| 接続・切断 | `!join` / `!leave` | `/join` / `/leave` | 全員 |
-| 任意文の読み上げ | `!say 文章` | `/say text:文章` | 全員 |
-| 話者変更 | `!speaker 3` | `/speaker id:3` | 管理者 |
-| 音量変更 | `!volume 1.2` | `/volume value:1.2` | 管理者 |
-| 速度変更 | `!speed 1.1` | `/speed value:1.1` | 管理者 |
-| 状態・キュー確認 | `!status` / `!queue` | `/status` / `/queue` | 全員 |
-| キュー指定削除 | `!remove 2` | `/remove index:2` | 管理者 |
-| 待機キュー消去 | `!clear` | `/clear` | 管理者 |
-| 現在の文をスキップ | `!skip` | `/skip` | 管理者 |
-| 次の文を一時停止・再開 | `!pause` / `!resume` | `/pause` / `/resume` | 管理者 |
-| 話者一覧 | `!speakers` | `/speakers` | 全員 |
-| ヘルプ | `!help` | `/help` | 全員 |
+PowerShellの実行ポリシーでブロックされる場合は、同じディレクトリの`up.cmd`、`down.cmd`を使えます。
 
-音量は `0.0〜2.0`、速度は `0.5〜2.0` です。設定は再起動後も保持されます。`!queue` は待機文の一覧を表示し、`!remove 2` のように指定番号を削除できます。`/skip` は再生中の文だけをキャンセルし、次のキューへ進みます。`/pause` は次の読み上げを停止し、`/resume` で再開します。
+## Linuxビルド
 
-## 🛡️ 読み上げ対象の制御（管理者）
+必要環境: Bash、Git、Go 1.22以上、`patch`。
+
+```bash
+TARGET_ARCH=amd64 bash ./build/build.sh
+TARGET_ARCH=arm64 bash ./build/build.sh
+```
+
+生成物:
 
 ```text
-!channel allow チャンネルID   # allowを1つでも設定すると、そのチャンネルだけ対象
-!channel block チャンネルID   # チャンネルを除外
-!channel remove チャンネルID  # チャンネル設定を解除
-!user block ユーザーID         # ユーザーを除外
-!user remove ユーザーID        # ユーザー除外を解除
+build/dist/yomiage-keiryou-amd64
+build/dist/yomiage-keiryou-arm64
 ```
 
-スラッシュコマンドでは `/channel action:allow id:...`、`/user action:block id:...` の形式です。除外設定も `settings.json` に保存されます。
+Makeを使う場合:
 
-## ✅ 仕様・安定性
-
-- 投稿はサーバーごとのキューで順番に処理します。1投稿120文字超は読み上げません。
-- キュー容量は30件です。満杯時もDiscordイベント処理をブロックしません。
-- VOICEVOXの音声生成に一時的な失敗があった場合は1回自動再試行します。
-- 接続中の音声処理は終了時にキャンセルされ、一時ファイルも削除されます。
-- メッセージ応答には接続・終了・状態・キュー確認・全消去のボタンが表示されます。
-
-## 🐳 Docker
-
-VOICEVOX Engineと同じネットワークで起動してください。
-
-```sh
-docker build -t yomiage .
-docker run --rm --env-file .env -v "$PWD/data:/data" yomiage
+```bash
+make build-amd64
+make build-arm64
+make archive-amd64
 ```
 
-Dockerでは既定のVOICEVOX URLが `http://voicevox:50021`、設定保存先が `/data/settings.json` です。
+ビルドスクリプトは`UPSTREAM_COMMIT`に固定された上流ソースを取得し、パッチ検証、`go test ./...`、クロスビルドを順番に行います。
 
-## 📌 スラッシュコマンドの登録
+## 主な環境変数
 
-`DISCORD_GUILD_ID` を指定すると対象サーバーへ登録します。省略時はグローバル登録を試みますが、反映に時間がかかる場合があります。
+| 変数 | 既定値 | 用途 |
+| --- | --- | --- |
+| `DISCORD_TOKEN` | なし | Discord Botトークン |
+| `VOICEVOX_URL` | `http://localhost:50021` | VOICEVOX EngineのURL |
+| `VOICEVOX_SPEAKER` | `3` | 話者ID |
+| `YOMIAGE_SETTINGS_FILE` | 上流実装の既定値 | サーバー設定ファイル |
+| `YOMIAGE_CACHE_DIR` | `./cache/tts` | WAVキャッシュディレクトリ |
+| `YOMIAGE_CACHE_TTL` | `168h` | キャッシュの有効期間 |
+| `YOMIAGE_CACHE_MAX_BYTES` | `268435456` | キャッシュ上限 |
+| `YOMIAGE_MAX_AUDIO_BYTES` | `33554432` | 1音声の最大サイズ |
 
-## 🧪 開発
+## キャッシュ仕様
 
-```sh
-go test ./...
-go test -race ./...
-go vet ./...
-```
+- キャッシュキーは本文・話者・音量・速度からSHA-256で生成します。
+- 同じ設定の音声は再利用し、VOICEVOXへの不要な再合成を避けます。
+- 合成は一度に1件へ制限し、低メモリ環境でのピーク使用量を抑えます。
+- 一時ファイルを同じキャッシュディレクトリに作成し、完成後に`rename`するため、途中のWAVを再利用しません。
+- TTL超過または総容量超過時は古いキャッシュから削除します。
 
-GitHub Actionsでもテスト、race検出、`go vet`を自動実行します。
+## 運用ドキュメント
+
+- [モード選択](docs/mode-selection.md)
+- [移行手順](docs/transition.md)
+- [権限トラブルシューティング](docs/permission-troubleshooting.md)
+- [Windows + Docker](windows/docker/README.md)
+- [WSL](windows/wsl/README.md)
+- [VOICEVOX](voicevox/README.md)
+- [PCスケジュール](pc-schedule/README.md)
+
+## CI
+
+GitHub Actionsでは、Linux amd64/arm64のテスト・ビルド、WSL用バイナリ生成、Dockerイメージのビルドを行います。タグPush時のみGHCRへ公開します。
+
+## 注意事項
+
+- Discordトークンや`.env`、バックアップZIPはGitへコミットしないでください。
+- VOICEVOX EngineとBotは同じホストで常駐させる場合、メモリ上限を確認してください。
+- `patches/0001-keiryou-cache.patch`は指定した上流コミット専用です。上流コミットを変更する場合は、差分の再生成とテストが必要です。

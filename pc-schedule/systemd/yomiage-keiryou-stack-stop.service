@@ -1,0 +1,6 @@
+[Unit]
+Description=Stop yomiage-keiryou stack
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl stop yomiage-keiryou.service voicevox-engine.service

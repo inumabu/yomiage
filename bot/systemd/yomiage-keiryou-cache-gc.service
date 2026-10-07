@@ -1,0 +1,7 @@
+[Unit]
+Description=Prune yomiage-keiryou TTS cache
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/yomiage-keiryou/cache-gc.sh

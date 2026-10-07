@@ -14,7 +14,7 @@ done
 if id -u "$APP_USER" >/dev/null 2>&1; then
   printf '\nuser: '; id "$APP_USER"
 else
-  echo '\nuser: MISSING'
+  printf '\nuser: MISSING\n'
 fi
 
 if [[ -f /usr/local/bin/yomiage-keiryou ]]; then

@@ -35,7 +35,7 @@ if ((Test-Path $envPath) -and -not $Force) {
     }
 }
 
-Write-Host '🗣️ Yomiage Keiryou v5.3.2 対話型設定' -ForegroundColor Cyan
+Write-Host '🗣️ Yomiage Keiryou v5.3.3 対話型設定' -ForegroundColor Cyan
 Write-Host 'Discord Bot Tokenは画面に表示されません。' -ForegroundColor DarkGray
 $token = Read-RequiredSecret 'Discord Bot Token'
 $guild = Read-Default '開発用Guild ID（不要なら空欄）' ''

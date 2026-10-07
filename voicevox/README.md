@@ -1,6 +1,6 @@
 # VOICEVOX VPS
 
-512MiB 構成を想定した VOICEVOX Engine の systemd / swap / nftables 設定です。
+低メモリVPS（512MiB〜1GB）を想定した VOICEVOX Engine の systemd / swap / nftables 設定です。
 
 `VOICEVOX_BIN` は実際に配置した Engine のパスへ変更してください。
 

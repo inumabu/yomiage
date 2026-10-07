@@ -7,7 +7,9 @@ if (-not (Test-Path .env)) {
 }
 
 $tokenLine = Select-String -Path .env -Pattern '^DISCORD_TOKEN=([^\s].*)$' -ErrorAction SilentlyContinue
-if (-not $tokenLine) {
+$consent = Select-String -Path .env -Pattern '^YOMIAGE_LICENSE_ACCEPTED=true$' -ErrorAction SilentlyContinue
+$license = Select-String -Path .env -Pattern '^YOMIAGE_LICENSE_VERSION=2026-10-08$' -ErrorAction SilentlyContinue
+if (-not $tokenLine -or -not $consent -or -not $license) {
     & (Join-Path $PSScriptRoot 'setup-env.ps1')
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }

@@ -3,10 +3,14 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="$SCRIPT_DIR/.env"
+CONSENT_LOG="$SCRIPT_DIR/.yomiage-consent.jsonl"
+LICENSE_VERSION='2026-10-08'
 FORCE=0
 if [[ "${1:-}" == "--force" ]]; then FORCE=1; fi
 
-if [[ -f "$ENV_FILE" && "$FORCE" -eq 0 ]] && grep -qE '^DISCORD_TOKEN=[^[:space:]]+$' "$ENV_FILE"; then
+if [[ -f "$ENV_FILE" && "$FORCE" -eq 0 ]] && grep -qE '^DISCORD_TOKEN=[^[:space:]]+$' "$ENV_FILE" \
+  && grep -q '^YOMIAGE_LICENSE_ACCEPTED=true$' "$ENV_FILE" \
+  && grep -q "^YOMIAGE_LICENSE_VERSION=$LICENSE_VERSION$" "$ENV_FILE"; then
   echo '.envは既に設定済みです。再設定する場合は ./setup-env.sh --force を実行してください。'
   exit 0
 fi
@@ -16,6 +20,18 @@ read_default() {
   read -r -p "$prompt [$default]: " value
   printf '%s' "${value:-$default}"
 }
+
+echo '📜 利用ルール確認'
+echo '✅ 個人利用・学習・改造・商用利用が可能です。'
+echo '✅ 友人・チーム・コミュニティ内で共有できます。'
+echo '⚠️ 自作発言・不特定多数への再配布は禁止です。'
+echo '❌ マルウェア・不正アクセス・情報窃取・詐欺目的は禁止です。'
+echo '詳細: https://github.com/inumabu/yomiage/blob/main/LICENSE'
+read -r -p '同意する場合は AGREE と入力してください: ' agreement
+if [[ "${agreement^^}" != 'AGREE' ]]; then
+  echo '利用ルールへの同意が確認できないため、設定を中止しました。' >&2
+  exit 1
+fi
 
 read -r -s -p 'Discord Bot Token（入力は表示されません）: ' token
 printf '\n'
@@ -45,7 +61,12 @@ GOGC=$gogc
 YOMIAGE_CACHE_TTL=$ttl
 YOMIAGE_CACHE_MAX_BYTES=$cache_max
 YOMIAGE_MAX_AUDIO_BYTES=$audio_max
+YOMIAGE_LICENSE_ACCEPTED=true
+YOMIAGE_LICENSE_VERSION=$LICENSE_VERSION
 EOF
 chmod 600 "$ENV_FILE"
+printf '{"event":"license_consent","accepted":true,"license_version":"%s","accepted_at":"%s","source":"setup-env.sh"}\n' "$LICENSE_VERSION" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$CONSENT_LOG"
+chmod 600 "$CONSENT_LOG"
 echo ".envを作成しました: $ENV_FILE"
+echo "🧾 同意ログをローカル保存しました（個人情報・Tokenは記録しません）: $CONSENT_LOG"
 echo '次に docker compose up -d --build を実行してください。'

@@ -6,6 +6,8 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 $envPath = Join-Path $PSScriptRoot '.env'
+$consentLogPath = Join-Path $PSScriptRoot '.yomiage-consent.jsonl'
+$licenseVersion = '2026-10-08'
 
 function Read-Default([string]$Prompt, [string]$Default) {
     $value = Read-Host "$Prompt [$Default]"
@@ -29,13 +31,25 @@ function Read-RequiredSecret([string]$Prompt) {
 
 if ((Test-Path $envPath) -and -not $Force) {
     $existing = Get-Content $envPath -Raw
-    if ($existing -match '(?m)^DISCORD_TOKEN=\S+') {
+    if ($existing -match '(?m)^DISCORD_TOKEN=\S+' -and
+        $existing -match '(?m)^YOMIAGE_LICENSE_ACCEPTED=true$' -and
+        $existing -match "(?m)^YOMIAGE_LICENSE_VERSION=$licenseVersion$") {
         Write-Host '.envは既に設定済みです。再設定する場合は -Force を指定してください。' -ForegroundColor Yellow
         exit 0
     }
 }
 
 Write-Host '🗣️ Yomiage Keiryou v5.3.4 対話型設定' -ForegroundColor Cyan
+Write-Host '📜 利用ルール確認' -ForegroundColor Cyan
+Write-Host '✅ 個人利用・学習・改造・商用利用が可能です。' -ForegroundColor Green
+Write-Host '✅ 友人・チーム・コミュニティ内で共有できます。' -ForegroundColor Green
+Write-Host '⚠️ 自作発言・不特定多数への再配布は禁止です。' -ForegroundColor Yellow
+Write-Host '❌ マルウェア・不正アクセス・情報窃取・詐欺目的は禁止です。' -ForegroundColor Red
+Write-Host '詳細: https://github.com/inumabu/yomiage/blob/main/LICENSE' -ForegroundColor DarkGray
+$agreement = Read-Host '同意する場合は AGREE と入力してください'
+if ($agreement.Trim().ToUpperInvariant() -ne 'AGREE') {
+    throw '利用ルールへの同意が確認できないため、設定を中止しました。'
+}
 Write-Host 'Discord Bot Tokenは画面に表示されません。' -ForegroundColor DarkGray
 $token = Read-RequiredSecret 'Discord Bot Token'
 $guild = Read-Default '開発用Guild ID（不要なら空欄）' ''
@@ -58,8 +72,19 @@ GOGC=$gogc
 YOMIAGE_CACHE_TTL=$ttl
 YOMIAGE_CACHE_MAX_BYTES=$cacheMax
 YOMIAGE_MAX_AUDIO_BYTES=$audioMax
+YOMIAGE_LICENSE_ACCEPTED=true
+YOMIAGE_LICENSE_VERSION=$licenseVersion
 "@
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [System.IO.File]::WriteAllText($envPath, $content, $utf8NoBom)
+$log = [ordered]@{
+    event = 'license_consent'
+    accepted = $true
+    license_version = $licenseVersion
+    accepted_at = [DateTime]::UtcNow.ToString('o')
+    source = 'setup-env.ps1'
+} | ConvertTo-Json -Compress
+[System.IO.File]::AppendAllText($consentLogPath, $log + [Environment]::NewLine, $utf8NoBom)
 Write-Host ".envを作成しました: $envPath" -ForegroundColor Green
+Write-Host "🧾 同意ログをローカル保存しました（個人情報・Tokenは記録しません）: $consentLogPath" -ForegroundColor Green
 Write-Host '次に .\up.ps1 を実行してください。' -ForegroundColor Green

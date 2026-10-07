@@ -1,6 +1,8 @@
 # 🔐 対話型 `.env` 設定ガイド
 
-Yomiage Keiryou v5.3.4のDocker構成は、初回起動前にDiscord Bot Tokenなどを対話形式で設定できます。Tokenは入力中に画面へ表示されません。
+Yomiage Keiryou v5.3.2のDocker構成は、初回起動前にDiscord Bot Tokenなどを対話形式で設定できます。Tokenは入力中に画面へ表示されません。
+
+初回設定では、[`LICENSE`](../LICENSE)の利用ルールを表示し、`AGREE`の入力を求めます。同意しない場合は設定を完了できません。
 
 ## Windows PowerShell
 
@@ -59,6 +61,8 @@ docker compose -f compose.yml up -d --build
 | `YOMIAGE_CACHE_TTL` | 任意 | `168h` | TTSキャッシュ保持期間 |
 | `YOMIAGE_CACHE_MAX_BYTES` | 任意 | `268435456` | キャッシュ上限 |
 | `YOMIAGE_MAX_AUDIO_BYTES` | 任意 | `33554432` | 1音声の上限 |
+| `YOMIAGE_LICENSE_ACCEPTED` | 自動 | `true` | 利用ルールへの同意済みフラグ |
+| `YOMIAGE_LICENSE_VERSION` | 自動 | `2026-10-08` | 同意したルールの版 |
 
 ## セキュリティ
 
@@ -67,6 +71,27 @@ docker compose -f compose.yml up -d --build
 - Tokenが漏えいした場合はDiscord Developer Portalで即時再生成してください。
 - Linux/WSLでは`.env`を`chmod 600`で保存します。
 - 設定の再生成は既存ファイルを自動上書きしません。明示的に`--force`または`-Force`を指定してください。
+
+## 🧾 同意ログの最小収集
+
+同意確認の記録は、設定ディレクトリ内の`.yomiage-consent.jsonl`へ**ローカル保存**します。中央サーバーへの送信や外部アップロードは行いません。
+
+記録するのは次の項目だけです。
+
+- 同意イベント名
+- `accepted: true`
+- ライセンス版
+- UTCの同意日時
+- 実行経路（`setup-env.ps1`または`setup-env.sh`）
+
+次の情報は記録・収集しません。
+
+- DiscordユーザーID、Guild ID
+- Discord Bot Token
+- IPアドレス、ホスト名、OSユーザー名
+- メッセージ本文、音声本文、利用コマンド
+
+Linux/WSLでは同意ログも`0600`で保存します。ルールが更新されると版が変わり、次回設定時に再同意が必要になります。ログを削除したい場合は、Botを停止してから`.yomiage-consent.jsonl`を削除してください。削除してもBotの動作には影響しません。
 
 ## 設定確認
 

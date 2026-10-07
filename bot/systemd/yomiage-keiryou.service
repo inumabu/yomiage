@@ -1,0 +1,36 @@
+[Unit]
+Description=yomiage-keiryou Discord TTS Bot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=yomiage-keiryou
+Group=yomiage-keiryou
+EnvironmentFile=/etc/yomiage-keiryou/yomiage.env
+ExecStart=/usr/local/bin/yomiage-keiryou
+Restart=always
+RestartSec=5
+
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+ReadWritePaths=/var/lib/yomiage-keiryou /var/cache/yomiage-keiryou
+
+# Keep room for Debian and the rest of the VPS.
+MemoryHigh=256M
+MemoryMax=384M
+TasksMax=64
+
+Environment=TMPDIR=/var/cache/yomiage-keiryou/tmp
+
+[Install]
+WantedBy=multi-user.target

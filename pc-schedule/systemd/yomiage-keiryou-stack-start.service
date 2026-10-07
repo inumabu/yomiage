@@ -1,0 +1,8 @@
+[Unit]
+Description=Start yomiage-keiryou stack
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl start voicevox-engine.service yomiage-keiryou.service

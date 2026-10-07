@@ -1,0 +1,52 @@
+name: yomiage-keiryou
+
+services:
+  yomiage-volume-init:
+    build:
+      context: ../..
+      dockerfile: windows/docker/Dockerfile
+    user: "0:0"
+    command:
+      - /bin/sh
+      - -lc
+      - >-
+        uid=$$(id -u yomiage-keiryou); gid=$$(id -g yomiage-keiryou);
+        install -d -m 0750 /var/lib/yomiage-keiryou /var/lib/yomiage-keiryou/cache/tts /var/lib/yomiage-keiryou/tmp;
+        chown -R $$uid:$$gid /var/lib/yomiage-keiryou
+    volumes:
+      - yomiage-data:/var/lib/yomiage-keiryou
+
+  voicevox:
+    image: ${VOICEVOX_IMAGE:-voicevox/voicevox_engine:latest}
+    restart: unless-stopped
+    expose:
+      - "50021"
+
+  yomiage:
+    build:
+      context: ../..
+      dockerfile: windows/docker/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      yomiage-volume-init:
+        condition: service_completed_successfully
+      voicevox:
+        condition: service_started
+    env_file:
+      - ./.env
+    environment:
+      VOICEVOX_URL: http://voicevox:50021
+      YOMIAGE_SETTINGS_FILE: /var/lib/yomiage-keiryou/settings.json
+      YOMIAGE_CACHE_DIR: /var/lib/yomiage-keiryou/cache/tts
+      TMPDIR: /var/lib/yomiage-keiryou/tmp
+      GOMEMLIMIT: ${GOMEMLIMIT:-128MiB}
+      GOGC: ${GOGC:-50}
+      YOMIAGE_CACHE_TTL: ${YOMIAGE_CACHE_TTL:-168h}
+      YOMIAGE_CACHE_MAX_BYTES: ${YOMIAGE_CACHE_MAX_BYTES:-268435456}
+      YOMIAGE_MAX_AUDIO_BYTES: ${YOMIAGE_MAX_AUDIO_BYTES:-33554432}
+    volumes:
+      - yomiage-data:/var/lib/yomiage-keiryou
+
+volumes:
+  yomiage-data:
+    name: yomiage-keiryou-data

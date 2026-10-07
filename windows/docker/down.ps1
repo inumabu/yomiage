@@ -1,0 +1,3 @@
+$ErrorActionPreference = 'Stop'
+Set-Location $PSScriptRoot
+docker compose -f compose.yml down

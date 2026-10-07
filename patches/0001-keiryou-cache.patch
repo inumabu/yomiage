@@ -1,0 +1,309 @@
+diff --git a/main.go b/main.go
+index 7604ce9..55b5464 100644
+--- a/main.go
++++ b/main.go
+@@ -3,6 +3,7 @@ package main
+ import (
+ 	"bytes"
+ 	"context"
++	"crypto/sha256"
+ 	"encoding/json"
+ 	"errors"
+ 	"fmt"
+@@ -14,6 +15,7 @@ import (
+ 	"os"
+ 	"os/signal"
+ 	"path/filepath"
++	"sort"
+ 	"strconv"
+ 	"strings"
+ 	"sync"
+@@ -157,6 +159,11 @@ type bot struct {
+ 	players      map[string]*player
+ 	settings     map[string]guildSettings
+ 	settingsPath string
++	cacheDir     string
++	cacheTTL     time.Duration
++	cacheMaxByte int64
++	maxAudioByte int64
++	synthMu      sync.Mutex
+ }
+ 
+ type player struct {
+@@ -210,7 +217,15 @@ func main() {
+ 		players:      make(map[string]*player),
+ 		settings:     make(map[string]guildSettings),
+ 		settingsPath: settingsFilePath(),
++		cacheDir:     envString("YOMIAGE_CACHE_DIR", "./cache/tts"),
++		cacheTTL:     envDuration("YOMIAGE_CACHE_TTL", 7*24*time.Hour),
++		cacheMaxByte: envInt64("YOMIAGE_CACHE_MAX_BYTES", 256*1024*1024),
++		maxAudioByte: envInt64("YOMIAGE_MAX_AUDIO_BYTES", 32*1024*1024),
+ 	}
++	if err := os.MkdirAll(app.cacheDir, 0750); err != nil {
++		log.Fatalf("⚠️ TTSキャッシュディレクトリの作成に失敗しました: %v", err)
++	}
++	app.cleanupTTSCaches("")
+ 	if err := app.loadSettings(); err != nil {
+ 		log.Printf("⚠️ 設定の読み込みに失敗しました: %v", err)
+ 	}
+@@ -1093,28 +1108,14 @@ func (b *bot) speak(current *player, text string) error {
+ 	}()
+ 
+ 	setting := b.guildSettings(current.guildID)
+-	audio, err := b.synthesizeWithSettings(ctx, text, setting)
++	wavPath, err := b.ensureTTSAudio(ctx, text, setting)
+ 	if err != nil {
+ 		return err
+ 	}
+ 
+-	file, err := os.CreateTemp("", "yomiage-*.wav")
+-	if err != nil {
+-		return fmt.Errorf("create audio file: %w", err)
+-	}
+-	fileName := file.Name()
+-	defer os.Remove(fileName)
+-	if _, err := file.Write(audio); err != nil {
+-		file.Close()
+-		return fmt.Errorf("write audio file: %w", err)
+-	}
+-	if err := file.Close(); err != nil {
+-		return fmt.Errorf("close audio file: %w", err)
+-	}
+-
+ 	encodeOptions := dca.StdEncodeOptions
+ 	encodeOptions.RawOutput = true
+-	encodeSession, err := dca.EncodeFile(fileName, encodeOptions)
++	encodeSession, err := dca.EncodeFile(wavPath, encodeOptions)
+ 	if err != nil {
+ 		return fmt.Errorf("encode audio (is ffmpeg installed?): %w", err)
+ 	}
+@@ -1169,54 +1170,217 @@ func (b *bot) synthesizeWithSpeaker(ctx context.Context, text string, speakerID
+ }
+ 
+ func (b *bot) synthesizeWithSettings(ctx context.Context, text string, setting guildSettings) ([]byte, error) {
++	tmp, err := os.CreateTemp("", "yomiage-keiryou-*.wav")
++	if err != nil {
++		return nil, err
++	}
++	name := tmp.Name()
++	if err := tmp.Close(); err != nil {
++		os.Remove(name)
++		return nil, err
++	}
++	defer os.Remove(name)
++	if err := b.synthesizeToFile(ctx, text, setting, name); err != nil {
++		return nil, err
++	}
++	return os.ReadFile(name)
++}
++
++func (b *bot) ensureTTSAudio(ctx context.Context, text string, setting guildSettings) (string, error) {
++	setting = normalizeSettings(setting, b.speaker)
++	key := ttsCacheKey(text, setting)
++	path := filepath.Join(b.cacheDir, key+".wav")
++	if info, err := os.Stat(path); err == nil && info.Size() > 0 && !cacheExpired(info.ModTime(), b.cacheTTL) {
++		_ = os.Chtimes(path, time.Now(), time.Now())
++		return path, nil
++	}
++
++	// VOICEVOX は 512MB 環境でのピークメモリを抑えるため、合成は全 guild 共通で直列化する。
++	b.synthMu.Lock()
++	defer b.synthMu.Unlock()
++
++	if info, err := os.Stat(path); err == nil && info.Size() > 0 && !cacheExpired(info.ModTime(), b.cacheTTL) {
++		_ = os.Chtimes(path, time.Now(), time.Now())
++		return path, nil
++	}
++
++	tmp, err := os.CreateTemp(b.cacheDir, ".tts-*.wav.tmp")
++	if err != nil {
++		return "", fmt.Errorf("create TTS cache temp file: %w", err)
++	}
++	tmpName := tmp.Name()
++	if err := tmp.Close(); err != nil {
++		os.Remove(tmpName)
++		return "", fmt.Errorf("close TTS cache temp file: %w", err)
++	}
++	defer os.Remove(tmpName)
++
++	if err := b.synthesizeToFile(ctx, text, setting, tmpName); err != nil {
++		return "", err
++	}
++	if err := os.Rename(tmpName, path); err != nil {
++		return "", fmt.Errorf("commit TTS cache: %w", err)
++	}
++	_ = os.Chtimes(path, time.Now(), time.Now())
++	b.cleanupTTSCaches(path)
++	return path, nil
++}
++
++func (b *bot) synthesizeToFile(ctx context.Context, text string, setting guildSettings, fileName string) error {
+ 	setting = normalizeSettings(setting, b.speaker)
+ 	speakerID := setting.Speaker
+ 	queryURL := b.ttsURL + "/audio_query?text=" + url.QueryEscape(text) + "&speaker=" + strconv.Itoa(speakerID)
+ 	queryRequest, err := http.NewRequestWithContext(ctx, http.MethodPost, queryURL, nil)
+ 	if err != nil {
+-		return nil, fmt.Errorf("create audio query: %w", err)
++		return fmt.Errorf("create audio query: %w", err)
+ 	}
+ 	queryResponse, err := b.client.Do(queryRequest)
+ 	if err != nil {
+-		return nil, fmt.Errorf("VOICEVOX audio query: %w", err)
++		return fmt.Errorf("VOICEVOX audio query: %w", err)
+ 	}
+ 	defer queryResponse.Body.Close()
+ 	if queryResponse.StatusCode != http.StatusOK {
+-		return nil, fmt.Errorf("VOICEVOX audio query returned %s", queryResponse.Status)
++		return fmt.Errorf("VOICEVOX audio query returned %s", queryResponse.Status)
+ 	}
+-
+ 	var query map[string]any
+ 	if err := json.NewDecoder(queryResponse.Body).Decode(&query); err != nil {
+-		return nil, fmt.Errorf("decode audio query: %w", err)
++		return fmt.Errorf("decode audio query: %w", err)
+ 	}
+ 	query["volumeScale"] = setting.Volume
+ 	query["speedScale"] = setting.Speed
+ 	queryBody, err := json.Marshal(query)
+ 	if err != nil {
+-		return nil, fmt.Errorf("encode audio query: %w", err)
++		return fmt.Errorf("encode audio query: %w", err)
+ 	}
+-
+ 	synthesisURL := b.ttsURL + "/synthesis?speaker=" + strconv.Itoa(speakerID)
+ 	synthesisRequest, err := http.NewRequestWithContext(ctx, http.MethodPost, synthesisURL, bytes.NewReader(queryBody))
+ 	if err != nil {
+-		return nil, fmt.Errorf("create synthesis request: %w", err)
++		return fmt.Errorf("create synthesis request: %w", err)
+ 	}
+ 	synthesisRequest.Header.Set("Content-Type", "application/json")
+ 	synthesisResponse, err := b.client.Do(synthesisRequest)
+ 	if err != nil {
+-		return nil, fmt.Errorf("VOICEVOX synthesis: %w", err)
++		return fmt.Errorf("VOICEVOX synthesis: %w", err)
+ 	}
+ 	defer synthesisResponse.Body.Close()
+ 	if synthesisResponse.StatusCode != http.StatusOK {
+-		return nil, fmt.Errorf("VOICEVOX synthesis returned %s", synthesisResponse.Status)
++		return fmt.Errorf("VOICEVOX synthesis returned %s", synthesisResponse.Status)
++	}
++	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_TRUNC, 0640)
++	if err != nil {
++		return fmt.Errorf("open TTS WAV file: %w", err)
++	}
++	defer file.Close()
++	limit := io.LimitReader(synthesisResponse.Body, b.maxAudioByte+1)
++	n, err := io.Copy(file, limit)
++	if err != nil {
++		return fmt.Errorf("stream TTS WAV: %w", err)
++	}
++	if n > b.maxAudioByte {
++		return fmt.Errorf("VOICEVOX synthesis exceeded %d bytes", b.maxAudioByte)
++	}
++	if err := file.Sync(); err != nil {
++		return fmt.Errorf("sync TTS WAV: %w", err)
+ 	}
+-	return io.ReadAll(synthesisResponse.Body)
++	return nil
+ }
+-
+ func (b *bot) synthesize(ctx context.Context, text string) ([]byte, error) {
+ 	return b.synthesizeWithSpeaker(ctx, text, b.speaker)
+ }
+ 
++func ttsCacheKey(text string, setting guildSettings) string {
++	setting.Volume = normalizeFloat(setting.Volume, defaultVolume)
++	setting.Speed = normalizeFloat(setting.Speed, defaultSpeed)
++	s := "v1\x00" + text + "\x00" + strconv.Itoa(setting.Speaker) + "\x00" +
++		strconv.FormatFloat(setting.Volume, 'g', -1, 64) + "\x00" +
++		strconv.FormatFloat(setting.Speed, 'g', -1, 64)
++	return fmt.Sprintf("%x", sha256.Sum256([]byte(s)))
++}
++
++func cacheExpired(modTime time.Time, ttl time.Duration) bool {
++	return ttl > 0 && time.Since(modTime) >= ttl
++}
++
++func (b *bot) cleanupTTSCaches(excludePath string) {
++	entries, err := os.ReadDir(b.cacheDir)
++	if err != nil {
++		return
++	}
++	type cacheEntry struct {
++		path    string
++		size    int64
++		modTime time.Time
++	}
++	entriesByTime := make([]cacheEntry, 0, len(entries))
++	var total int64
++	now := time.Now()
++	for _, entry := range entries {
++		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".wav") {
++			continue
++		}
++		path := filepath.Join(b.cacheDir, entry.Name())
++		info, err := entry.Info()
++		if err != nil {
++			continue
++		}
++		if b.cacheTTL > 0 && now.Sub(info.ModTime()) >= b.cacheTTL && path != excludePath {
++			_ = os.Remove(path)
++			continue
++		}
++		if path == excludePath {
++			continue
++		}
++		total += info.Size()
++		entriesByTime = append(entriesByTime, cacheEntry{path: path, size: info.Size(), modTime: info.ModTime()})
++	}
++	if b.cacheMaxByte <= 0 || total <= b.cacheMaxByte {
++		return
++	}
++	sort.Slice(entriesByTime, func(i, j int) bool { return entriesByTime[i].modTime.Before(entriesByTime[j].modTime) })
++	for _, entry := range entriesByTime {
++		if total <= b.cacheMaxByte {
++			break
++		}
++		if err := os.Remove(entry.path); err == nil {
++			total -= entry.size
++		}
++	}
++}
++
++func normalizeFloat(v, fallback float64) float64 {
++	if math.IsNaN(v) || math.IsInf(v, 0) {
++		return fallback
++	}
++	return v
++}
++
++func envString(name, fallback string) string {
++	if value := strings.TrimSpace(os.Getenv(name)); value != "" {
++		return value
++	}
++	return fallback
++}
++
++func envDuration(name string, fallback time.Duration) time.Duration {
++	if value := strings.TrimSpace(os.Getenv(name)); value != "" {
++		parsed, err := time.ParseDuration(value)
++		if err == nil && parsed > 0 {
++			return parsed
++		}
++	}
++	return fallback
++}
++
++func envInt64(name string, fallback int64) int64 {
++	if value := strings.TrimSpace(os.Getenv(name)); value != "" {
++		parsed, err := strconv.ParseInt(value, 10, 64)
++		if err == nil && parsed > 0 {
++			return parsed
++		}
++	}
++	return fallback
++}
++
+ func (b *bot) reply(channelID, guildID, content string, ok bool) {
+ 	if _, err := b.session.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
+ 		Embeds:     []*discordgo.MessageEmbed{newEmbed("📣 読み上げBOT", content, ok, b.embedFieldsForGuild(guildID))},

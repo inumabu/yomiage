@@ -69,4 +69,4 @@ printf '{"event":"license_consent","accepted":true,"license_version":"%s","accep
 chmod 600 "$CONSENT_LOG"
 echo ".envを作成しました: $ENV_FILE"
 echo "🧾 同意ログをローカル保存しました（個人情報・Tokenは記録しません）: $CONSENT_LOG"
-echo '次に docker compose up -d --build を実行してください。'
+echo '設定が完了しました。通常はリポジトリのルートへ戻り ./setup.sh --skip-env を実行してください。'

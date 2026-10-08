@@ -9,15 +9,13 @@
 
 ## 🐳 Docker Desktop
 
-`windows/docker/` を使用します。
+リポジトリのルートにある構築自動化スクリプトを使用します。
 
 ```powershell
-cd windows\docker
-.\setup-env.ps1
-.\up.ps1
+.\setup.ps1
 ```
 
-🔐 Tokenは対話設定中に非表示入力できます。PowerShellが使えない場合は`setup-env.cmd`と`up.cmd`を使用してください。
+🔐 Tokenは対話設定中に非表示入力できます。利用ルールへの`AGREE`入力、Docker構築、コンテナ起動まで自動で実行されます。PowerShellが使えない場合はルートの`setup.cmd`を使用してください。
 
 ## 🐧 WSL2 / Debian
 

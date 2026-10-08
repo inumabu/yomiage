@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-[[ $EUID -eq 0 ]] || { echo 'run as root' >&2; exit 1; }
+[[ $EUID -eq 0 ]] || { echo 'root権限で実行してください' >&2; exit 1; }
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 install -d -m 0755 /usr/local/libexec
-[[ -x /opt/voicevox/voicevox_engine ]] || { echo '/opt/voicevox/voicevox_engine is missing' >&2; exit 1; }
+[[ -x /opt/voicevox/voicevox_engine ]] || { echo '/opt/voicevox/voicevox_engine が見つかりません' >&2; exit 1; }
 
 if ! id -u voicevox >/dev/null 2>&1; then
   useradd --system --home /opt/voicevox --shell /usr/sbin/nologin voicevox
@@ -16,4 +16,4 @@ if [[ ! -f /etc/voicevox-engine.env ]]; then
   install -m 0600 "$ROOT_DIR/voicevox/voicevox.env.example" /etc/voicevox-engine.env
 fi
 systemctl daemon-reload
-echo 'Installed. Edit /etc/voicevox-engine.env, then enable voicevox-engine.service.'
+echo 'インストールが完了しました。/etc/voicevox-engine.env を編集してから voicevox-engine.service を有効化してください。'

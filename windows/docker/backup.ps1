@@ -9,7 +9,7 @@ New-Item -ItemType Directory -Force -Path $dir | Out-Null
 try {
     docker compose -f compose.yml cp yomiage:/var/lib/yomiage-keiryou/settings.json (Join-Path $dir 'settings.json')
     Compress-Archive -Path (Join-Path $dir 'settings.json') -DestinationPath $dest -Force
-    Write-Host "Backup created: $dest"
+    Write-Host "バックアップを作成しました: $dest"
 } finally {
     Remove-Item -Recurse -Force $dir -ErrorAction SilentlyContinue
 }

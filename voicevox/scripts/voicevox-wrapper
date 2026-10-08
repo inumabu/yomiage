@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 . /etc/voicevox-engine.env
-: "${VOICEVOX_BIN:?VOICEVOX_BIN is required}"
-: "${VOICEVOX_HOST:?VOICEVOX_HOST is required}"
-: "${VOICEVOX_PORT:?VOICEVOX_PORT is required}"
+: "${VOICEVOX_BIN:?VOICEVOX_BINが必要です}"
+: "${VOICEVOX_HOST:?VOICEVOX_HOSTが必要です}"
+: "${VOICEVOX_PORT:?VOICEVOX_PORTが必要です}"
 
-exec "$VOICEVOX_BIN" --host "$VOICEVOX_HOST" --port "$VOICEVOX_PORT" ${VOICEVOX_EXTRA_ARGS:-}
+read -r -a extra_args <<< "${VOICEVOX_EXTRA_ARGS:-}"
+exec "$VOICEVOX_BIN" --host "$VOICEVOX_HOST" --port "$VOICEVOX_PORT" "${extra_args[@]}"

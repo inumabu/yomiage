@@ -6,6 +6,6 @@ build-amd64:
 archive-amd64: build-amd64
 	tar -C build -czf yomiage-keiryou-linux-amd64.tar.gz dist/yomiage-keiryou-amd64
 
-# WSL uses the DAVE-enabled Linux amd64 binary.
+# WSLではDAVE対応Linux amd64バイナリを使用します。
 build-windows-amd64: build-amd64
 	cp build/dist/yomiage-keiryou-amd64 windows/wsl/yomiage-keiryou-amd64

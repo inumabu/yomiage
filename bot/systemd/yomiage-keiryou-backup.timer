@@ -1,5 +1,5 @@
 [Unit]
-Description=Daily yomiage-keiryou settings backup
+Description=yomiage-keiryou設定の日次バックアップ
 
 [Timer]
 OnCalendar=*-*-* 04:15:00

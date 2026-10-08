@@ -1,4 +1,4 @@
-# 🐳 DAVE対応Linux container for Docker Desktop on Windows and amd64 VPS
+# 🐳 WindowsのDocker Desktopとamd64 VPS向けDAVE対応Linuxコンテナ
 FROM golang:1.24-bookworm AS build
 
 ARG DAVE_REF=v0.29.1-dave.26
@@ -10,14 +10,14 @@ RUN apt-get update \
        autoconf automake libtool zip unzip tar libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# The DAVE fork contains a libdave git submodule, so this must be a recursive clone.
+# DAVEフォークはlibdaveをGitサブモジュールとして含むため、再帰クローンが必要です。
 RUN git clone --depth 1 --branch "$DAVE_REF" --recurse-submodules \
       https://github.com/aleph-garden/discordgo.git /work/discordgo \
     && cd /work/discordgo/dave/libdave/cpp \
     && ./vcpkg/bootstrap-vcpkg.sh -disableMetrics \
     && make BUILD_TYPE=Release
 
-# Build from the checked-out repository so fixes in this tree are included in the image.
+# チェックアウト済みのリポジトリからビルドし、このツリーの修正をイメージへ反映します。
 COPY . /work/yomiage
 
 COPY patches/0001-keiryou-cache.patch /work/yomiage-keiryou.patch

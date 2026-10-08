@@ -1,4 +1,12 @@
 # 📝 Changelog
+## v5.3.6
+- 🩺 セットアップの環境診断・不足依存関係の修復・失敗時の再試行案内を追加
+- 🔐 バックアップ復元時のtar展開を対象ファイル限定・権限保護に変更
+- 🧱 Firewall設定値とキャッシュGC設定の入力検証を追加
+- 🐳 ルートDockerfileをDAVE対応の正式Docker構成へ統一
+- 🛡️ GitHub Actionsのパッケージ書き込み権限をDockerジョブだけに限定
+- 🇯🇵 利用者向けの説明、ログ、エラー、systemd表示を日本語へ統一
+
 ## v5.3.5
 - 🔨 ビルドとDockerイメージを、古い上流コミットではなく現在のリポジトリソースから生成する方式へ統一
 - 🧪 現行ソースへキャッシュ・DAVEパッチを適用してからテストする再現可能なビルドに修正
@@ -45,7 +53,7 @@
   - Linux amd64 / arm64 のテスト・ビルド
   - WSL向けLinuxバイナリの生成
   - Dockerイメージのビルド
-  - Git tag時のGHCR push
+  - Gitタグ時のGHCRへの公開
 - 🪟 Windows系PC対応を追加
   - 🐳 Docker Desktop + WSL2 backend
   - 🐧 WSL2 / Debian native

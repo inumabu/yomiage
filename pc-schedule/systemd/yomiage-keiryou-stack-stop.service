@@ -1,5 +1,5 @@
 [Unit]
-Description=Stop yomiage-keiryou stack
+Description=yomiage-keiryou一式を停止
 
 [Service]
 Type=oneshot

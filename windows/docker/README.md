@@ -1,6 +1,6 @@
 # 🪟 Windows + Docker Desktop
 
-Windows 10/11 + Docker Desktop の Linux containers / WSL2 backend を使う構成です。
+Windows 10/11 + Docker DesktopのLinuxコンテナ／WSL2バックエンドを使う構成です。
 
 ## 🧩 構成
 
@@ -69,7 +69,7 @@ docker compose -f windows/docker/compose.yml up -d
 
 ## 💾 データ
 
-`yomiage-keiryou-data` というDocker named volumeに `settings.json` と TTS キャッシュが保存されます。TTS キャッシュは再生成可能なのでバックアップ対象外です。
+`yomiage-keiryou-data`というDocker名前付きボリュームに`settings.json`とTTSキャッシュが保存されます。TTSキャッシュは再生成可能なのでバックアップ対象外です。
 
 ## 🧠 メモリ
 
@@ -80,7 +80,7 @@ Docker Desktop のVM/WSL側メモリ設定とWindowsホストのRAMには余裕�
 GitHub Actions のタグビルドでは `ghcr.io/<owner>/<repo>` へ yomiage-keiryou イメージをpushできます。公開レジストリを使いたくない場合は、ローカルbuildのままで利用できます。
 
 
-## 🧯 Permission denied が出たら
+## 🧯 「Permission denied」が出たら
 
 `.ps1` が実行できない場合:
 
@@ -88,7 +88,7 @@ GitHub Actions のタグビルドでは `ghcr.io/<owner>/<repo>` へ yomiage-kei
 setup.cmd
 ```
 
-Docker named volume の所有者エラーが `settings.json` や `/var/lib/yomiage-keiryou` に対して出る場合:
+Docker名前付きボリュームの所有者エラーが`settings.json`や`/var/lib/yomiage-keiryou`に対して出る場合:
 
 ```powershell
 cd windows\docker
@@ -97,4 +97,4 @@ cd ..\..
 \.\setup.ps1 -NoBuild
 ```
 
-この修復は named volume の所有者だけを直し、データを削除しません。
+この修復は名前付きボリュームの所有者だけを直し、データを削除しません。

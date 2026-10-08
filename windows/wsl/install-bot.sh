@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-[[ $EUID -eq 0 ]] || { echo 'run as root' >&2; exit 1; }
+[[ $EUID -eq 0 ]] || { echo 'root権限で実行してください' >&2; exit 1; }
 BINARY_SRC="${1:-}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 if [[ -z "$BINARY_SRC" ]]; then
-  echo "usage: sudo bash ./windows/wsl/install-bot.sh /path/to/yomiage-keiryou-amd64" >&2
+  echo "使い方: sudo bash ./windows/wsl/install-bot.sh /path/to/yomiage-keiryou-amd64" >&2
   exit 2
 fi
-[[ -f "$BINARY_SRC" ]] || { echo "binary not found: $BINARY_SRC" >&2; exit 1; }
+[[ -f "$BINARY_SRC" ]] || { echo "バイナリが見つかりません: $BINARY_SRC" >&2; exit 1; }
 
 install -d -m 0750 /etc/yomiage-keiryou /etc/systemd/journald.conf.d /var/lib/yomiage-keiryou /var/cache/yomiage-keiryou/tts /var/cache/yomiage-keiryou/tmp
 if ! id -u yomiage-keiryou >/dev/null 2>&1; then
@@ -30,6 +30,6 @@ if [[ ! -f /etc/yomiage-keiryou/yomiage.env ]]; then
 fi
 
 systemctl daemon-reload
-echo 'Installed WSL bot. Edit /etc/yomiage-keiryou/yomiage.env, then:'
+echo 'WSL用Botをインストールしました。/etc/yomiage-keiryou/yomiage.envを編集してから、次を実行してください:'
 echo '  systemctl enable --now yomiage-keiryou.service'
 echo '  systemctl enable --now yomiage-keiryou-cache-gc.timer'

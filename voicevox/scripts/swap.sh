@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
-[[ $EUID -eq 0 ]] || { echo 'run as root' >&2; exit 1; }
+[[ $EUID -eq 0 ]] || { echo 'root権限で実行してください' >&2; exit 1; }
 
 SIZE=${SWAP_SIZE:-2G}
 FILE=/swapfile
 
 if swapon --show=NAME --noheadings | grep -qx "$FILE"; then
-  echo "$FILE already active"
+  echo "$FILE は既に有効です"
   exit 0
 fi
 if [[ ! -f "$FILE" ]]; then

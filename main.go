@@ -1117,7 +1117,7 @@ func (b *bot) speak(current *player, text string) error {
 	encodeOptions.RawOutput = true
 	encodeSession, err := dca.EncodeFile(fileName, encodeOptions)
 	if err != nil {
-		return fmt.Errorf("encode audio (is ffmpeg installed?): %w", err)
+		return fmt.Errorf("音声のエンコードに失敗しました（ffmpegがインストールされているか確認してください）: %w", err)
 	}
 	defer encodeSession.Cleanup()
 

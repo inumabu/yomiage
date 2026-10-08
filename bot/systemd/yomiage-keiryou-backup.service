@@ -1,5 +1,5 @@
 [Unit]
-Description=Backup yomiage-keiryou settings
+Description=yomiage-keiryou設定のバックアップ
 After=network-online.target
 Wants=network-online.target
 

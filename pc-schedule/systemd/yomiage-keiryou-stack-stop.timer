@@ -1,5 +1,5 @@
 [Unit]
-Description=Stop yomiage-keiryou at scheduled time
+Description=指定時刻にyomiage-keiryou一式を停止
 
 [Timer]
 OnCalendar=*-*-* 02:00:00

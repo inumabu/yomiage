@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-[[ $EUID -eq 0 ]] || { echo 'run as root: sudo bash ./bot/scripts/repair-permissions.sh' >&2; exit 1; }
+[[ $EUID -eq 0 ]] || { echo 'root権限で実行してください: sudo bash ./bot/scripts/repair-permissions.sh' >&2; exit 1; }
 
 if ! id -u yomiage-keiryou >/dev/null 2>&1; then
   useradd --system --home /var/lib/yomiage-keiryou --shell /usr/sbin/nologin yomiage-keiryou
@@ -26,4 +26,4 @@ if [[ -f /usr/local/bin/yomiage-keiryou ]]; then
   chmod 0755 /usr/local/bin/yomiage-keiryou
 fi
 
-echo 'permissions repaired'
+echo '権限を修復しました。'

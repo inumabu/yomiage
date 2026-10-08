@@ -1,5 +1,5 @@
 [Unit]
-Description=Start yomiage-keiryou stack
+Description=yomiage-keiryou一式を起動
 After=network-online.target
 Wants=network-online.target
 

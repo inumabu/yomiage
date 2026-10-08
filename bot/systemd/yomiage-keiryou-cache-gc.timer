@@ -1,5 +1,5 @@
 [Unit]
-Description=Daily yomiage-keiryou TTS cache pruning
+Description=yomiage-keiryou TTSキャッシュの日次整理
 
 [Timer]
 OnBootSec=15min

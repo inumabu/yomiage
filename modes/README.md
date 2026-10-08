@@ -1,6 +1,6 @@
 # 🧩 運用モード一覧
 
-| モード | Bot | VOICEVOX | 起動 | 推奨度 |
+| モード | Bot構成 | VOICEVOX構成 | 起動方法 | 推奨度 |
 |---|---|---|---|---|
 | `01-local-pc-always` | 自宅PC | 自宅PC | 常時 | ⭐⭐⭐⭐⭐ |
 | `02-local-pc-scheduled` | 自宅PC | 自宅PC | 時間帯 | ⭐⭐⭐⭐ |

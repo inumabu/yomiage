@@ -1,13 +1,13 @@
-# 🧯 Permission troubleshooting
+# 🧯 権限トラブルシューティング
 
 ## Linux / Debian
-Run helper scripts with `sudo bash ...`. The runtime user must own `/var/lib/yomiage-keiryou` and `/var/cache/yomiage-keiryou`.
+補助スクリプトは`sudo bash ...`で実行してください。実行ユーザーには`/var/lib/yomiage-keiryou`と`/var/cache/yomiage-keiryou`の所有権が必要です。
 
 ## WSL
-Keep the repository inside the Linux filesystem when possible. `/mnt/c` can lack executable permissions for Linux files. Use `bash ./script.sh` if needed.
+可能な限りリポジトリをLinuxファイルシステム内に置いてください。`/mnt/c`配下ではLinuxファイルの実行権限が不足する場合があります。必要なら`bash ./script.sh`で実行してください。
 
 ## Docker Desktop
-The Compose file runs a one-shot root initializer against the named volume before starting the Bot. If an existing volume has the wrong owner, use `repair-volume.ps1`.
+ComposeファイルはBot起動前に、名前付きボリュームをroot権限で一度初期化します。既存ボリュームの所有者が誤っている場合は`repair-volume.ps1`を使用してください。
 
 
 ## 🧪 GitHub Actionsで `build/build.sh: Permission denied` が出る場合

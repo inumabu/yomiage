@@ -54,7 +54,7 @@ func TestSetSpeakerAndStatus(t *testing.T) {
 	b := newTestBot(t)
 	guildID := "guild-1"
 	if got := b.setSpeaker(guildID, 0); got != "話者IDは1以上で指定してください。" {
-		t.Fatalf("invalid setSpeaker() = %q", got)
+			t.Fatalf("setSpeaker()の結果が不正です = %q", got)
 	}
 	b.setSpeaker(guildID, 8)
 	if got := b.guildSpeaker(guildID); got != 8 {
@@ -81,17 +81,17 @@ func TestSettingsPersistAndExclusions(t *testing.T) {
 		t.Fatal("blocked user should be excluded")
 	}
 	if err := b.saveSettings(); err != nil {
-		t.Fatalf("saveSettings() error = %v", err)
+		t.Fatalf("saveSettings()でエラー = %v", err)
 	}
 
 	loaded := newTestBot(t)
 	loaded.settingsPath = b.settingsPath
 	if err := loaded.loadSettings(); err != nil {
-		t.Fatalf("loadSettings() error = %v", err)
+		t.Fatalf("loadSettings()でエラー = %v", err)
 	}
 	setting := loaded.guildSettings(guildIDForTest)
 	if setting.Volume != 1.5 || setting.Speed != 1.25 || !loaded.isExcluded(guildIDForTest, "channel-1", "user-1") {
-		t.Fatalf("persisted settings were not restored: %+v", setting)
+			t.Fatalf("保存した設定を復元できませんでした: %+v", setting)
 	}
 }
 
@@ -100,10 +100,10 @@ const guildIDForTest = "guild-settings"
 func TestVolumeAndSpeedValidation(t *testing.T) {
 	b := newTestBot(t)
 	if got := b.setVolume("guild", 2.1); got != "音量は 0.0〜2.0 の範囲で指定してください。" {
-		t.Fatalf("invalid volume = %q", got)
+			t.Fatalf("音量が不正です = %q", got)
 	}
 	if got := b.setSpeed("guild", 0.4); got != "速度は 0.5〜2.0 の範囲で指定してください。" {
-		t.Fatalf("invalid speed = %q", got)
+			t.Fatalf("速度が不正です = %q", got)
 	}
 }
 

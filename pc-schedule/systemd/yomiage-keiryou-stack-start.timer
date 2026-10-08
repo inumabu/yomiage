@@ -1,5 +1,5 @@
 [Unit]
-Description=Start yomiage-keiryou at scheduled time
+Description=指定時刻にyomiage-keiryou一式を起動
 
 [Timer]
 OnCalendar=*-*-* 18:00:00

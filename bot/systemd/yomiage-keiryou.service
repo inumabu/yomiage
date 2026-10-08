@@ -1,5 +1,5 @@
 [Unit]
-Description=yomiage-keiryou Discord TTS Bot
+Description=yomiage-keiryou Discord読み上げBot
 Wants=network-online.target
 After=network-online.target
 
@@ -25,7 +25,7 @@ RestrictRealtime=true
 RestrictSUIDSGID=true
 ReadWritePaths=/var/lib/yomiage-keiryou /var/cache/yomiage-keiryou
 
-# Keep room for Debian and the rest of the VPS.
+# DebianとVPS全体のために余裕を残す。
 MemoryHigh=256M
 MemoryMax=384M
 TasksMax=64

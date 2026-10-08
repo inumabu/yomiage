@@ -1,5 +1,5 @@
 [Unit]
-Description=VOICEVOX Engine for yomiage-keiryou
+Description=yomiage-keiryou用VOICEVOX Engine
 After=network-online.target
 Wants=network-online.target
 

@@ -1,5 +1,5 @@
 [Unit]
-Description=Prune yomiage-keiryou TTS cache
+Description=yomiage-keiryou TTSキャッシュを整理
 After=local-fs.target
 
 [Service]

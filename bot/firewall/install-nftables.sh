@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
-[[ $EUID -eq 0 ]] || { echo 'run as root' >&2; exit 1; }
+[[ $EUID -eq 0 ]] || { echo 'root権限で実行してください' >&2; exit 1; }
 
 ENV=/etc/yomiage-keiryou/network.env
-[[ -r "$ENV" ]] || { echo "$ENV is missing" >&2; exit 1; }
+[[ -r "$ENV" ]] || { echo "$ENV が見つかりません" >&2; exit 1; }
 . "$ENV"
 : "${SSH_PORT:=22}"
+[[ "$SSH_PORT" =~ ^[0-9]+$ ]] && (( SSH_PORT >= 1 && SSH_PORT <= 65535 )) || { echo 'SSH_PORTは1〜65535で指定してください' >&2; exit 2; }
 
 cat > /etc/nftables.conf <<RULES
 flush ruleset
@@ -32,4 +33,4 @@ RULES
 systemctl enable nftables
 nft -f /etc/nftables.conf
 systemctl restart nftables
-echo 'Bot firewall installed.'
+echo 'Bot用Firewallを設定しました。'

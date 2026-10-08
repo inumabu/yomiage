@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-[[ $EUID -eq 0 ]] || { echo 'run as root' >&2; exit 1; }
+[[ $EUID -eq 0 ]] || { echo 'root権限で実行してください' >&2; exit 1; }
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
@@ -13,7 +13,7 @@ chown -R yomiage-keiryou:yomiage-keiryou /var/lib/yomiage-keiryou /var/cache/yom
 chmod 0700 /var/lib/yomiage-keiryou /var/cache/yomiage-keiryou/tmp
 chmod 0750 /var/cache/yomiage-keiryou/tts
 
-[[ -x /usr/local/bin/yomiage-keiryou ]] || { echo '/usr/local/bin/yomiage-keiryou is missing' >&2; exit 1; }
+[[ -x /usr/local/bin/yomiage-keiryou ]] || { echo '/usr/local/bin/yomiage-keiryou が見つかりません' >&2; exit 1; }
 install -m 0755 "$ROOT_DIR/bot/scripts/cache-gc.sh" /usr/local/libexec/yomiage-keiryou/cache-gc.sh
 install -m 0755 "$ROOT_DIR/bot/scripts/backup-yomiage.sh" /usr/local/libexec/yomiage-keiryou/backup-yomiage.sh
 install -m 0755 "$ROOT_DIR/bot/scripts/restore-yomiage.sh" /usr/local/libexec/yomiage-keiryou/restore.sh
@@ -38,7 +38,7 @@ install -m 0644 "$ROOT_DIR/bot/systemd/yomiage-keiryou.conf" /etc/systemd/journa
 systemctl restart systemd-journald
 
 systemctl daemon-reload
-echo 'Installed. Edit /etc/yomiage-keiryou/yomiage.env and backup.env, then:'
+echo 'インストールが完了しました。/etc/yomiage-keiryou/yomiage.env と backup.env を編集してから、次を実行してください:'
 echo '  systemctl enable --now yomiage-keiryou.service'
 echo '  systemctl enable --now yomiage-keiryou-cache-gc.timer'
 echo '  systemctl enable --now yomiage-keiryou-backup.timer'

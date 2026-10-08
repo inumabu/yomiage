@@ -75,7 +75,7 @@ index 7604ce9..55b5464 100644
 -	encodeSession, err := dca.EncodeFile(fileName, encodeOptions)
 +	encodeSession, err := dca.EncodeFile(wavPath, encodeOptions)
  	if err != nil {
- 		return fmt.Errorf("encode audio (is ffmpeg installed?): %w", err)
+ 		return fmt.Errorf("音声のエンコードに失敗しました（ffmpegがインストールされているか確認してください）: %w", err)
  	}
 @@ -1169,54 +1170,217 @@ func (b *bot) synthesizeWithSpeaker(ctx context.Context, text string, speakerID
  }

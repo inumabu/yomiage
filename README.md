@@ -1,4 +1,4 @@
-# 🗣️ Yomiage Keiryou v5.3.5
+# 🗣️ Yomiage Keiryou v5.3.6
 
 DiscordのメッセージをVOICEVOXで読み上げる `yomiage` の配布・運用セットです。低メモリ環境での安定運用を目的に、TTS音声のディスクキャッシュ、VOICEVOX合成の直列化、systemd / Docker Desktop / WSL2向けの運用ファイルを同梱しています。
 

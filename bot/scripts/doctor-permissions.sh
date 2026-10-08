@@ -5,20 +5,20 @@ APP_USER=yomiage-keiryou
 for path in /etc/yomiage-keiryou /var/lib/yomiage-keiryou /var/cache/yomiage-keiryou /var/cache/yomiage-keiryou/tts /var/cache/yomiage-keiryou/tmp /var/backups/yomiage-keiryou; do
   if [[ -e "$path" ]]; then
     printf '%-42s ' "$path"
-    stat -c 'owner=%U:%G mode=%a' "$path"
+    stat -c '所有者=%U:%G 権限=%a' "$path"
   else
-    printf '%-42s MISSING\n' "$path"
+    printf '%-42s 未作成\n' "$path"
   fi
 done
 
 if id -u "$APP_USER" >/dev/null 2>&1; then
-  printf '\nuser: '; id "$APP_USER"
+  printf '\nユーザー: '; id "$APP_USER"
 else
-  printf '\nuser: MISSING\n'
+  printf '\nユーザー: 未作成\n'
 fi
 
 if [[ -f /usr/local/bin/yomiage-keiryou ]]; then
-  printf 'binary: '; stat -c 'owner=%U:%G mode=%a %n' /usr/local/bin/yomiage-keiryou
+  printf 'バイナリ: '; stat -c '所有者=%U:%G 権限=%a %n' /usr/local/bin/yomiage-keiryou
 else
-  echo 'binary: MISSING'
+  echo 'バイナリ: 未作成'
 fi

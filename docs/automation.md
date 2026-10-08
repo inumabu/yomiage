@@ -11,6 +11,8 @@ Yomiage Keiryouには、Windows、Linux、WSLで同じ入口を使える構築�
 
 ## 最短手順
 
+構築時は、Windows・Linux・WSLのいずれでも**リポジトリのルートにある自動化スクリプトを最初に実行**してください。`windows/docker`へ移動して`setup-env`、`up`、`logs`を順番に実行する必要はありません。
+
 ### Windows PowerShell
 
 ```powershell
@@ -34,7 +36,7 @@ chmod +x setup.sh
 
 1. Docker Engineの稼働確認
 2. Docker Compose v2の確認
-3. `windows/docker/setup-env.ps1`または`setup-env.sh`の起動
+3. WindowsではPowerShell、Linux/WSLではBashを通じて対話型設定を起動
 4. `.env`の作成と利用ルール同意の確認
 5. Bot・VOICEVOX・Volume初期化コンテナのビルドと起動
 6. `docker compose ps`による状態表示
@@ -66,6 +68,8 @@ chmod +x setup.sh
 ```
 
 `--skip-env`を指定する場合は、事前に`windows/docker/.env`を作成してください。
+
+`setup-env.ps1`、`setup-env.sh`、`up.ps1`などの個別スクリプトは、設定の再実行や復旧などの上級者向けです。通常の初回構築・再構築・確認にはルートの`setup.ps1`、`setup.cmd`、`setup.sh`を使用してください。
 
 ### Linux amd64ビルド
 

@@ -15,37 +15,38 @@ VOICEVOX の `50021/tcp` はホストへ公開せず、Docker 内ネットワー
 
 ## 🚀 起動
 
-PowerShell でこのディレクトリに移動し、`up.ps1` を実行します。PowerShell の実行ポリシーでブロックされる場合は `up.cmd` を使えます。
+通常はリポジトリのルートに戻り、構築自動化スクリプトを実行してください。個別スクリプトを順番に実行する必要はありません。
 
 ```powershell
-.\setup-env.ps1
-.\up.ps1
+cd ..\..
+\.\setup.ps1
 ```
 
-🔐 `setup-env.ps1`ではDiscord Bot Tokenを非表示で入力できます。`.env`が存在しない状態で`.\up.ps1`を実行した場合も、自動的に対話設定が始まります。
+🔐 `setup.ps1`がDiscord Bot Tokenを非表示で受け取り、利用ルールの同意、`.env`作成、Dockerイメージのビルド、コンテナ起動まで実行します。
 
 PowerShellが使えない場合:
 
 ```cmd
-setup-env.cmd
-up.cmd
+cd ..\..
+setup.cmd
 ```
 
 Linux/WSLでは次を使います。
 
 ```bash
-./setup-env.sh
-docker compose -f compose.yml up -d --build
+cd ../..
+./setup.sh
 ```
 
 🔁 設定をやり直す場合は、既存`.env`を保護するため明示的に強制指定します。
 
 ```powershell
-.\setup-env.ps1 -Force
+cd ..\..
+\.\setup.ps1 -ForceEnv
 ```
 
 ```bash
-./setup-env.sh --force
+./setup.sh --force-env
 ```
 
 💡 `.env`は秘密情報を含むため、Git・Issue・スクリーンショットへ貼り付けないでください。
@@ -53,11 +54,10 @@ docker compose -f compose.yml up -d --build
 ## 📋 操作
 
 ```powershell
-.\up.ps1
-.\logs.ps1
-.\down.ps1
-.\backup.ps1
-.\restore.ps1 .\backup\settings-YYYYMMDD-HHMMSS.zip
+docker compose -f windows/docker/compose.yml ps
+docker compose -f windows/docker/compose.yml logs -f
+docker compose -f windows/docker/compose.yml down
+docker compose -f windows/docker/compose.yml up -d
 ```
 
 ## 📨 Discordメッセージの表示範囲
@@ -85,14 +85,16 @@ GitHub Actions のタグビルドでは `ghcr.io/<owner>/<repo>` へ yomiage-kei
 `.ps1` が実行できない場合:
 
 ```cmd
-up.cmd
+setup.cmd
 ```
 
 Docker named volume の所有者エラーが `settings.json` や `/var/lib/yomiage-keiryou` に対して出る場合:
 
 ```powershell
-.\repair-volume.ps1
-.\up.ps1
+cd windows\docker
+\.\repair-volume.ps1
+cd ..\..
+\.\setup.ps1 -NoBuild
 ```
 
 この修復は named volume の所有者だけを直し、データを削除しません。

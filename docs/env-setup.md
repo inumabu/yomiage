@@ -1,34 +1,40 @@
 # 🔐 対話型 `.env` 設定ガイド
 
-Yomiage Keiryou v5.3.2のDocker構成は、初回起動前にDiscord Bot Tokenなどを対話形式で設定できます。Tokenは入力中に画面へ表示されません。
+Yomiage Keiryou v5.3.4のDocker構成は、初回起動前にDiscord Bot Tokenなどを対話形式で設定できます。Tokenは入力中に画面へ表示されません。
 
 初回設定では、[`LICENSE`](../LICENSE)の利用ルールを表示し、`AGREE`の入力を求めます。同意しない場合は設定を完了できません。
 
-## Windows PowerShell
+## 推奨: 構築自動化スクリプト
+
+通常は個別の`setup-env`や`up`を実行せず、リポジトリのルートから構築自動化スクリプトを実行してください。
+
+Windows PowerShell:
 
 ```powershell
-cd windows/docker
-.\setup-env.ps1
+\.\setup.ps1
 ```
 
 PowerShellの実行ポリシーでブロックされる場合:
 
 ```cmd
-setup-env.cmd
+setup.cmd
 ```
 
-その後に起動します。
+Linux / WSL:
 
-```powershell
-.\up.ps1
+```bash
+./setup.sh
 ```
 
-## Windowsで一度に起動
+自動化スクリプトは、Docker確認、対話型設定、同意確認、Dockerイメージのビルド、コンテナ起動、状態表示をまとめて実行します。個別スクリプトはトラブルシューティングや高度な運用が必要な場合だけ使用してください。
 
-`.env`が存在しない、またはToken未設定の場合、`up.ps1`が自動的に設定スクリプトを呼び出します。
+## 個別設定が必要な場合
+
+自動化スクリプトを使わず、環境設定だけをやり直す場合は、設定ディレクトリから個別スクリプトを実行できます。
 
 ```powershell
-.\up.ps1
+cd windows/docker
+\.\setup-env.ps1
 ```
 
 ## Linux / WSL
@@ -44,8 +50,11 @@ cd windows/docker
 ./setup-env.sh --force
 ```
 
+設定完了後はリポジトリのルートへ戻り、次のコマンドで構築できます。
+
 ```bash
-docker compose -f compose.yml up -d --build
+cd ../..
+./setup.sh --skip-env
 ```
 
 ## 設定項目

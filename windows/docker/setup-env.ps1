@@ -87,4 +87,4 @@ $log = [ordered]@{
 [System.IO.File]::AppendAllText($consentLogPath, $log + [Environment]::NewLine, $utf8NoBom)
 Write-Host ".envを作成しました: $envPath" -ForegroundColor Green
 Write-Host "🧾 同意ログをローカル保存しました（個人情報・Tokenは記録しません）: $consentLogPath" -ForegroundColor Green
-Write-Host '次に .\up.ps1 を実行してください。' -ForegroundColor Green
+Write-Host '設定が完了しました。通常はリポジトリのルートへ戻り .\setup.ps1 -SkipEnv を実行してください。' -ForegroundColor Green

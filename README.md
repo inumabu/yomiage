@@ -71,31 +71,28 @@ chmod +x setup.sh
 
 ### Windows + Docker Desktop
 
-Docker DesktopのLinux containers / WSL2 backendを起動した状態で、PowerShellから実行します。
+Docker DesktopのLinux containers / WSL2 backendを起動した状態で、リポジトリのルートから構築自動化スクリプトを実行します。
 
 ```powershell
-cd windows\docker
-.\setup-env.ps1
-.\up.ps1
-.\logs.ps1
+.\setup.ps1
 ```
 
-`setup-env.ps1` はDiscord Bot Tokenを非表示で入力し、`windows/docker/.env`を作成します。`.env`がない状態で `up.ps1` を実行した場合も、設定画面が自動的に起動します。
+`setup.ps1`がDocker確認、対話型のToken・利用ルール同意、`.env`作成、イメージビルド、コンテナ起動、状態確認まで実行します。
 
 停止:
 
 ```powershell
-.\down.ps1
+docker compose -f windows/docker/compose.yml down
 ```
 
-PowerShellの実行ポリシーによりブロックされる場合は `setup-env.cmd`、`up.cmd`、`down.cmd` を使用してください。設定項目の詳細は [`docs/env-setup.md`](docs/env-setup.md) を参照してください。
+PowerShellの実行ポリシーによりブロックされる場合は、ルートの`setup.cmd`を使用してください。設定項目の詳細は [`docs/env-setup.md`](docs/env-setup.md) を参照してください。
 
 ### Linux + systemd
 
-BotとVOICEVOXを同じホストで動かす最小構成です。まずバイナリをビルドし、VOICEVOXを配置してからインストールします。
+BotとVOICEVOXを同じホストで動かす最小構成です。まずルートの自動化スクリプトでLinux amd64バイナリを作成し、その後systemdへインストールします。
 
 ```bash
-TARGET_ARCH=amd64 bash ./build/build.sh
+./setup.sh --mode build
 sudo install -m 0755 build/dist/yomiage-keiryou-amd64 /usr/local/bin/yomiage-keiryou
 sudo bash ./voicevox/scripts/install.sh
 sudo bash ./bot/scripts/install.sh
@@ -140,16 +137,20 @@ VOICEVOXのAPIポート `50021` は、同一ホスト・Docker内部ネットワ
 
 ビルドスクリプトは、上流ソースを `build/build.sh` 内の `UPSTREAM_COMMIT` に固定して取得し、次の順番で処理します。
 
+通常は、次の自動化入口を使用してください。
+
+```bash
+./setup.sh --mode build
+# 生成物: build/dist/yomiage-keiryou-amd64
+```
+
 1. 上流コミットをチェックアウト
 2. キャッシュ機能とDAVE対応パッチを検証・適用
 3. `libdave`をビルド
 4. `go test ./...`を実行
 5. Linux amd64バイナリを生成
 
-```bash
-TARGET_ARCH=amd64 bash ./build/build.sh
-# 生成物: build/dist/yomiage-keiryou-amd64
-```
+直接`build/build.sh`を実行する方法は、上級者向けの低レベル手順です。通常の構築では`setup.sh --mode build`を使用してください。
 
 Makeを使う場合:
 
@@ -246,8 +247,10 @@ sudo systemctl enable --now yomiage-keiryou-backup.timer
 バックアップ:
 
 ```powershell
+cd windows\docker
 .\backup.ps1
 .\restore.ps1 .\backup\settings-YYYYMMDD-HHMMSS.zip
+cd ..\..
 ```
 
 ## WindowsのWSL2運用
@@ -348,8 +351,10 @@ sudo bash ./bot/scripts/repair-permissions.sh
 Windows Docker構成では、次を実行してからBotを再起動します。
 
 ```powershell
+cd windows\docker
 .\repair-volume.ps1
-.\up.ps1
+cd ..\..
+.\setup.ps1 -NoBuild
 ```
 
 この修復処理はVolume内の所有者だけを変更し、`settings.json`やキャッシュを削除しません。

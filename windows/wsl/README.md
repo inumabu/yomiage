@@ -36,7 +36,11 @@ sudo apt update
 sudo apt install -y ffmpeg ca-certificates
 ```
 
-BotバイナリはGitHub Actionsの `yomiage-keiryou-wsl-binaries` artifactから取得するか、自分で `./build/build.sh` を実行して生成します。
+BotバイナリはGitHub Actionsの `yomiage-keiryou-wsl-binaries` artifactから取得するか、リポジトリのルートで自動化スクリプトを実行して生成します。
+
+```bash
+./setup.sh --mode build
+```
 
 ## 4️⃣ Bot + VOICEVOX
 
@@ -69,7 +73,7 @@ WSL で `/mnt/c/...` 配下のファイルを `./script.sh` のように直接�
 cd ~/src
 git clone https://github.com/inumabu/yomiage-keiryou.git
 cd yomiage-keiryou
-bash ./build/build.sh
+./setup.sh --mode build
 ```
 
-Linux 側に配置できない事情がある場合も、スクリプトは `bash ./...sh` で起動してください。
+Linux 側に配置できない事情がある場合も、通常は`./setup.sh --mode build`を使用してください。低レベルのスクリプトを直接実行する場合だけ、`bash ./...sh`の形式で起動してください。

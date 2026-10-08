@@ -13,6 +13,31 @@ Yomiage Keiryouには、Windows、Linux、WSLで同じ入口を使える構築�
 
 構築時は、Windows・Linux・WSLのいずれでも**リポジトリのルートにある自動化スクリプトを最初に実行**してください。`windows/docker`へ移動して`setup-env`、`up`、`logs`を順番に実行する必要はありません。
 
+### エラー時の補助
+
+まず環境診断を実行すると、不足しているコマンドとDocker Engineの状態を一覧表示できます。
+
+```bash
+./setup.sh --mode docker --doctor
+./setup.sh --mode build --doctor
+```
+
+不足ツールをOSのパッケージ管理機能で導入してから再試行する場合は、`--repair`を付けます。Linux/WSLでは`apt-get`、Windowsでは`winget`を使用します。
+
+```bash
+./setup.sh --mode docker --repair
+./setup.sh --mode build --repair
+```
+
+Windowsでは次のように実行できます。
+
+```powershell
+.\setup.ps1 -Mode docker -Doctor
+.\setup.ps1 -Mode docker -Repair
+```
+
+`--repair`はNode.js、Git、Docker、Go、CMakeなどの不足コマンドを導入します。Docker Desktopそのものの初回起動、Windowsの再起動、利用規約への同意、Discord Token入力は自動完了できないため、画面の指示に従ってください。導入権限がない場合は、エラーに表示されたパッケージ名を管理者権限で導入してください。
+
 ### Windows PowerShell
 
 ```powershell
@@ -110,6 +135,8 @@ PowerShell:
 ```powershell
 .\setup.ps1 -Mode docker -DryRun
 ```
+
+エラーが発生した場合も、入口スクリプトは実行コマンド・終了コード・次に実行する診断コマンドを表示します。通常の初回構築は従来どおり`--repair`なしで実行し、意図しないパッケージ導入を避けられます。
 
 ## 重要な設計
 

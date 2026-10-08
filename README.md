@@ -37,6 +37,38 @@ DiscordのメッセージをVOICEVOXで読み上げる `yomiage` の配布・運
 
 ## 最短で始める
 
+### 🛠️ 構築自動化スクリプト
+
+Node.jsを共通の実行入口として、Windows、Linux、WSLから同じ構築処理を実行できます。詳細は[`docs/automation.md`](docs/automation.md)を参照してください。
+
+Windows PowerShell:
+
+```powershell
+.\setup.ps1
+```
+
+PowerShellが使えない場合:
+
+```cmd
+setup.cmd
+```
+
+Linux / WSL:
+
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+主なモード:
+
+```bash
+./setup.sh --mode docker       # Docker Desktop / Docker Composeで構築
+./setup.sh --mode build        # Linux amd64向けDAVE対応ビルド
+./setup.sh --mode verify       # スクリプトと構成の検証
+./setup.sh --mode docker --force-env
+```
+
 ### Windows + Docker Desktop
 
 Docker DesktopのLinux containers / WSL2 backendを起動した状態で、PowerShellから実行します。

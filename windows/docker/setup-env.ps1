@@ -39,7 +39,7 @@ if ((Test-Path $envPath) -and -not $Force) {
     }
 }
 
-Write-Host '🗣️ Yomiage Keiryou v5.3.4 対話型設定' -ForegroundColor Cyan
+Write-Host '🗣️ Yomiage Keiryou v5.3.5 対話型設定' -ForegroundColor Cyan
 Write-Host '📜 利用ルール確認' -ForegroundColor Cyan
 Write-Host '✅ 個人利用・学習・改造・商用利用が可能です。' -ForegroundColor Green
 Write-Host '✅ 友人・チーム・コミュニティ内で共有できます。' -ForegroundColor Green

@@ -1,4 +1,4 @@
-# 🗣️ Yomiage Keiryou v5.3.4
+# 🗣️ Yomiage Keiryou v5.3.5
 
 DiscordのメッセージをVOICEVOXで読み上げる `yomiage` の配布・運用セットです。低メモリ環境での安定運用を目的に、TTS音声のディスクキャッシュ、VOICEVOX合成の直列化、systemd / Docker Desktop / WSL2向けの運用ファイルを同梱しています。
 
@@ -135,7 +135,7 @@ VOICEVOXのAPIポート `50021` は、同一ホスト・Docker内部ネットワ
 
 ## ビルド
 
-ビルドスクリプトは、上流ソースを `build/build.sh` 内の `UPSTREAM_COMMIT` に固定して取得し、次の順番で処理します。
+ビルドスクリプトは、現在のリポジトリソースを作業領域へ展開し、パッチ適用後にテスト・ビルドします。
 
 通常は、次の自動化入口を使用してください。
 
@@ -144,7 +144,7 @@ VOICEVOXのAPIポート `50021` は、同一ホスト・Docker内部ネットワ
 # 生成物: build/dist/yomiage-keiryou-amd64
 ```
 
-1. 上流コミットをチェックアウト
+1. 現在のリポジトリソースを作業領域へ展開
 2. キャッシュ機能とDAVE対応パッチを検証・適用
 3. `libdave`をビルド
 4. `go test ./...`を実行

@@ -1,7 +1,6 @@
 # 🐳 DAVE対応Linux container for Docker Desktop on Windows and amd64 VPS
 FROM golang:1.24-bookworm AS build
 
-ARG UPSTREAM_COMMIT=3b810b45153f200d8a6ec8e190dee7a52d090d6e
 ARG DAVE_REF=v0.29.1-dave.26
 WORKDIR /work
 
@@ -18,11 +17,8 @@ RUN git clone --depth 1 --branch "$DAVE_REF" --recurse-submodules \
     && ./vcpkg/bootstrap-vcpkg.sh -disableMetrics \
     && make BUILD_TYPE=Release
 
-RUN git clone --filter=blob:none --no-checkout https://github.com/inumabu/yomiage.git /work/yomiage \
-    && cd /work/yomiage \
-    && git fetch --depth 1 origin "$UPSTREAM_COMMIT" \
-    && git checkout --detach "$UPSTREAM_COMMIT" \
-    && test "$(git rev-parse HEAD)" = "$UPSTREAM_COMMIT"
+# Build from the checked-out repository so fixes in this tree are included in the image.
+COPY . /work/yomiage
 
 COPY patches/0001-keiryou-cache.patch /work/yomiage-keiryou.patch
 COPY patches/0002-dave.patch /work/yomiage-dave.patch

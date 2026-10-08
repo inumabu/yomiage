@@ -2,8 +2,6 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-UPSTREAM_URL="https://github.com/inumabu/yomiage.git"
-UPSTREAM_COMMIT="3b810b45153f200d8a6ec8e190dee7a52d090d6e"
 DAVE_URL="https://github.com/aleph-garden/discordgo.git"
 DAVE_REF="v0.29.1-dave.26"
 TARGET_OS="${TARGET_OS:-linux}"
@@ -27,30 +25,27 @@ esac
 rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR"
 
-echo "[1/8] cloning pinned upstream"
-git clone --filter=blob:none --no-checkout "$UPSTREAM_URL" "$WORK_DIR/yomiage" >/dev/null 2>&1
-cd "$WORK_DIR/yomiage"
-git fetch --depth 1 origin "$UPSTREAM_COMMIT" >/dev/null 2>&1
-git checkout --detach "$UPSTREAM_COMMIT" >/dev/null 2>&1
-CURRENT="$(git rev-parse HEAD)"
-if [[ "$CURRENT" != "$UPSTREAM_COMMIT" ]]; then
-  echo "ERROR: failed to checkout pinned upstream commit: $CURRENT" >&2
-  exit 1
-fi
+# 配布物は常にこのリポジトリの検証済みHEADから作る。古い上流コミットを
+# 再取得する方式では、READMEや本体の修正がリリースバイナリへ反映されない。
+echo "[1/7] staging current repository source"
+mkdir -p "$WORK_DIR/yomiage"
+# archiveの展開先を明示し、ビルド作業領域をリポジトリ本体と分離する。
+git -C "$ROOT_DIR" archive --format=tar HEAD | tar -x -C "$WORK_DIR/yomiage"
 
-echo "[2/8] checking keiryou patch"
+cd "$WORK_DIR/yomiage"
+echo "[2/7] checking patches"
 git apply --check "$ROOT_DIR/patches/0001-keiryou-cache.patch"
 git apply --check "$ROOT_DIR/patches/0002-dave.patch"
 
-echo "[3/8] applying patches"
+echo "[3/7] applying patches"
 git apply "$ROOT_DIR/patches/0001-keiryou-cache.patch"
 git apply "$ROOT_DIR/patches/0002-dave.patch"
 
-echo "[4/8] cloning DAVE DiscordGo and libdave"
+echo "[4/7] cloning DAVE DiscordGo and libdave"
 git clone --depth 1 --branch "$DAVE_REF" --recurse-submodules "$DAVE_URL" "$WORK_DIR/discordgo" >/dev/null 2>&1
 DAVE_CPP="$WORK_DIR/discordgo/dave/libdave/cpp"
 
-echo "[5/8] building libdave"
+echo "[5/7] building libdave"
 cd "$DAVE_CPP"
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics >/dev/null
 make BUILD_TYPE=Release
@@ -67,11 +62,9 @@ export CGO_CFLAGS="-I$DAVE_CPP/includes"
 export CGO_LDFLAGS="-L$VCPKG_LIBDIR $LIBDAVE_BUILD/libdave.a -Wl,--start-group $VCPKG_LIBS -Wl,--end-group -lstdc++ -lm -ldl -lpthread"
 
 cd "$WORK_DIR/yomiage"
-echo "[6/8] testing DAVE-enabled build"
+echo "[6/7] testing and building $TARGET_OS/$TARGET_ARCH"
 go test -vet=off ./...
-
-echo "[7/8] building $TARGET_OS/$TARGET_ARCH"
 GOOS="$TARGET_OS" GOARCH="$TARGET_ARCH" go build -trimpath -ldflags='-s -w' -o "$DIST_DIR/yomiage-keiryou-$TARGET_ARCH" .
 
-echo "[8/8] result"
+echo "[7/7] result"
 ls -lh "$DIST_DIR/yomiage-keiryou-$TARGET_ARCH"
